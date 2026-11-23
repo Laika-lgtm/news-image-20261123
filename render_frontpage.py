@@ -715,11 +715,12 @@ def render():
         tw = d.textlength(tag, font=f_tag)
         d.rectangle([hx, hy, hx + tw + 14, hy + 22], fill=RED)
         d.text((hx + 7, hy + 4), tag, font=f_tag, fill=(255, 255, 255))
-        badge = s["badge"]
-        bw = d.textlength(badge, font=f_badge)
-        d.rectangle([hx + hw - bw - 12, hy, hx + hw, hy + 20],
-                    fill=(255, 255, 255))
-        d.text((hx + hw - bw - 6, hy + 3), badge, font=f_badge, fill=INK)
+        if s["id"] != 1:
+            badge = s["badge"]
+            bw = d.textlength(badge, font=f_badge)
+            d.rectangle([hx + hw - bw - 12, hy, hx + hw, hy + 20],
+                        fill=(255, 255, 255))
+            d.text((hx + hw - bw - 6, hy + 3), badge, font=f_badge, fill=INK)
         cap = s["caption"]
         cw2 = d.textlength(cap, font=f_cap)
         d.rectangle([hx, hy + 128 - 18, hx + cw2 + 10, hy + 128],
