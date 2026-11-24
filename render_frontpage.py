@@ -9,6 +9,16 @@ system (REPORTED / CLAIM tags on the three heroes plus a one-line
 legend), three sports cards (cricket draw, tennis year-end No. 1,
 Giddey triple-double), and an ALSO list with zero truncation.
 
+Round 2 (this file): the same page rebuilt after a full date audit of
+round 1. Round 1 scored rank 91 in blind round 3 (0.735389) and its
+hero was a Sunday story: the COP31 collapse happened on 22 November,
+not 23 November. Round 2 demotes COP31 to a Monday follow-on, promotes
+the Kyiv-region raid to hero 1, the Iran blockade vow to hero 2, and
+adds a new hero 3 — Nvidia reinstating Jensen Huang on Monday. Twelve
+stale list items are replaced with verified Monday stories, the Oxfam
+Gaza report is promoted to a card, and the DATE CHECK now names eight
+excluded stories plus one "Not yet".
+
 Structure: navy top bar, masthead, kicker, 6-number stat strip,
 7-region bar, THE DAY IN UTC strip, 3 illustrated heroes with
 certainty tags, 10 numbered cards in two rows, dotted world map with
@@ -514,6 +524,93 @@ def art_satellite(d, x, y, w, h):
               fill=(255, 80, 80))
 
 
+def art_chip(d, x, y, w, h):
+    # AI chip: dark board, circuit traces, a square chip with gold
+    # pins on all four sides and a glowing teal core marked AI.
+    d.rectangle([x, y, x + w, y + h], fill=(14, 22, 44))
+    rng = random.Random(20261123)
+    for _ in range(14):
+        sx = x + rng.randint(6, w - 6)
+        sy = y + rng.randint(6, int(h * 0.30))
+        d.ellipse([sx - 2, sy - 2, sx + 2, sy + 2], fill=(60, 120, 160))
+    # circuit traces from the edges toward the chip
+    for ty in (0.22, 0.50, 0.78):
+        d.line([x + 6, y + h * ty, x + w * 0.30, y + h * ty],
+               fill=(70, 140, 180), width=2)
+        d.line([x + w * 0.70, y + h * ty, x + w - 6, y + h * ty],
+               fill=(70, 140, 180), width=2)
+    for tx in (0.30, 0.70):
+        d.line([x + w * tx, y + 6, x + w * tx, y + h * 0.18],
+               fill=(70, 140, 180), width=2)
+        d.line([x + w * tx, y + h * 0.82, x + w * tx, y + h - 6],
+               fill=(70, 140, 180), width=2)
+    # chip body
+    cx0, cy0 = x + w * 0.30, y + h * 0.18
+    cx1, cy1 = x + w * 0.70, y + h * 0.82
+    d.rectangle([cx0, cy0, cx1, cy1], fill=(38, 40, 48),
+                outline=(200, 170, 60), width=2)
+    # gold pins, all four sides
+    for i in range(5):
+        px = cx0 + (i + 0.5) * (cx1 - cx0) / 5
+        d.rectangle([px - 4, cy0 - 8, px + 4, cy0], fill=(200, 170, 60))
+        d.rectangle([px - 4, cy1, px + 4, cy1 + 8], fill=(200, 170, 60))
+    for i in range(4):
+        py = cy0 + (i + 0.5) * (cy1 - cy0) / 4
+        d.rectangle([cx0 - 8, py - 4, cx0, py + 4], fill=(200, 170, 60))
+        d.rectangle([cx1, py - 4, cx1 + 8, py + 4], fill=(200, 170, 60))
+    # glowing core with AI
+    gx0, gy0 = x + w * 0.42, y + h * 0.34
+    gx1, gy1 = x + w * 0.58, y + h * 0.66
+    d.rectangle([gx0, gy0, gx1, gy1], fill=(20, 160, 140))
+    f_ai = font(SANS_B, 26)
+    ai = "AI"
+    aw = d.textlength(ai, font=f_ai)
+    d.text((x + w * 0.50 - aw / 2, y + h * 0.36), ai, font=f_ai,
+           fill=(255, 255, 255))
+
+
+def art_gaza(d, x, y, w, h):
+    # Gaza at dusk: banded orange-purple sky, a damaged skyline
+    # with broken rooftops, and a row of white aid tents below,
+    # one marked with a red cross.
+    d.rectangle([x, y, x + w, y + h * 0.34], fill=(214, 130, 70))
+    d.rectangle([x, y + h * 0.34, x + w, y + h * 0.58], fill=(150, 90, 120))
+    d.rectangle([x, y + h * 0.58, x + w, y + h], fill=(60, 55, 60))
+    # damaged skyline silhouette
+    base = y + h * 0.58
+    heights = [0.30, 0.44, 0.26, 0.50, 0.34, 0.46, 0.28, 0.40]
+    bx = x
+    for i, hf in enumerate(heights):
+        bw = w // len(heights)
+        top = base - h * hf
+        d.rectangle([bx, top, bx + bw - 2, base], fill=(40, 32, 40))
+        if i % 2 == 0:
+            # broken rooftop: jagged notch
+            d.polygon([(bx, top), (bx + bw * 0.3, top + h * 0.08),
+                       (bx + bw * 0.6, top),
+                       (bx + bw - 2, top + h * 0.05),
+                       (bx + bw - 2, top), (bx, top)],
+                      fill=(214, 130, 70))
+        for wy in range(int(top) + 6, int(base) - 4, 10):
+            if (i + wy) % 3 == 0:
+                d.rectangle([bx + 4, wy, bx + 7, wy + 4],
+                            fill=(255, 210, 90))
+        bx += bw
+    # aid tents, foreground
+    for i, tx in enumerate((0.08, 0.34, 0.60, 0.82)):
+        txx = x + w * tx
+        d.polygon([(txx - w * 0.10, y + h * 0.98),
+                   (txx, y + h * 0.72),
+                   (txx + w * 0.10, y + h * 0.98)],
+                  fill=(235, 230, 215))
+        if i == 1:
+            # red cross on the medical tent
+            d.rectangle([txx - 2, y + h * 0.82, txx + 2, y + h * 0.90],
+                        fill=(178, 34, 34))
+            d.rectangle([txx - 6, y + h * 0.855, txx + 6, y + h * 0.865],
+                        fill=(178, 34, 34))
+
+
 ART = {
     "cop31": art_cop31,
     "barrage": art_barrage,
@@ -528,6 +625,8 @@ ART = {
     "basketball": art_basketball,
     "tanker": art_tanker,
     "satellite": art_satellite,
+    "chip": art_chip,
+    "gaza": art_gaza,
 }
 
 # ------------------------------------------------------------- map ---
@@ -568,13 +667,13 @@ LAND_ROWS = [
 # story id -> (lat, lon, dx, dy): pin position + fan-out offset so the
 # dense Europe / Middle East cluster stays readable.
 PINS = {
-    1: (36.9, 30.7, -10, 2),      # Antalya
-    2: (50.4, 30.5, 12, 2),       # Kyiv
-    3: (35.7, 51.4, 14, -6),      # Tehran
+    1: (50.4, 30.5, 12, 2),       # Kyiv
+    2: (35.7, 51.4, 14, -6),      # Tehran
+    3: (37.4, -121.9, 0, 0),      # Santa Clara
     4: (32.1, 20.1, -2, 12),      # Benghazi
     5: (-41.3, 174.8, 0, 0),      # Wellington
     6: (50.8, 4.4, -14, 10),      # Brussels
-    7: (38.9, -77.0, 0, 0),       # Washington
+    7: (31.5, 34.5, -10, -4),     # Gaza
     8: (-6.3, 106.2, 0, 0),       # Cikande
     9: (40.2, 44.5, 8, 6),        # Yerevan
     10: (45.1, 7.7, -4, 12),      # Turin
@@ -690,9 +789,10 @@ def render():
     f_utc = font(SANS_B, 11)
     f_utc2 = font(SANS, 11)
     d.text((X0, uy + 2), "THE DAY IN UTC", font=f_utc, fill=RED)
-    utc_items = ("05:30 Kyiv toll at 11 \u00b7 07:32 Wellington Test drawn "
-                 "\u00b7 08:30 Kyiv debris on schools \u00b7 10:05 Poland "
-                 "confirms Kh-101s \u00b7 12:07 Merkury confirmed")
+    utc_items = ("05:30 Kyiv toll 11 \u00b7 07:32 Wellington drawn "
+                 "\u00b7 08:30 Kyiv debris on schools \u00b7 12:07 Merkury "
+                 "confirmed \u00b7 14:00 Qatar meets Rubio \u00b7 21:35 "
+                 "Monza 3-0")
     uw = d.textlength("THE DAY IN UTC  ", font=f_utc)
     d.text((X0 + uw, uy + 2), utc_items, font=f_utc2, fill=INK)
     d.line([X0, uy + 20, X0 + CW, uy + 20], fill=RULE, width=1)
@@ -715,7 +815,7 @@ def render():
         tw = d.textlength(tag, font=f_tag)
         d.rectangle([hx, hy, hx + tw + 14, hy + 22], fill=RED)
         d.text((hx + 7, hy + 4), tag, font=f_tag, fill=(255, 255, 255))
-        if s["id"] != 1:
+        if True:
             badge = s["badge"]
             bw = d.textlength(badge, font=f_badge)
             d.rectangle([hx + hw - bw - 12, hy, hx + hw, hy + 20],
@@ -847,9 +947,10 @@ def render():
 
     # ---- sources line ----
     f_ft = font(SANS, 9)
-    foot = ("Sources: Reuters, BBC, Al Jazeera, UN News, NBC News, Guardian, "
-            "Euronews, Anadolu, LaPresse, ABC Australia, Cricinfo, dpa, "
-            "Ukrinform, Oxfam, Tasnim. Every story names its outlet.")
+    foot = ("Sources: Reuters, AP, BBC, Euronews, Ukrinform, Guardian, "
+            "Oxfam, Tasnim, ESPN, IANS, UN News, Fox News, LaPresse, ABC "
+            "Australia, Cricinfo, Anadolu, NATO, France 24, h.ua, ICC, UN. "
+            "Every story names its outlet.")
     d.text((X0, 1012), foot, font=f_ft, fill=MUTED)
 
     out = os.path.join(HERE, "entry.png")
